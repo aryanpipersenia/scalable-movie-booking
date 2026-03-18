@@ -1,0 +1,23 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: catalog-service
+  datasource:
+    url: jdbc:mysql://localhost:3306/movie_booking_db?useSSL=false&serverTimezone=UTC
+    username: root
+    password: rootpassword # Matches your docker-compose.yml
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update # Automatically creates/updates your tables based on Java code
+    show-sql: true # Prints SQL queries in the console for debugging
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
