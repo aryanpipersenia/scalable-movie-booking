@@ -1,4 +1,4 @@
-package com.moviebooking.catalog_service;
+package com.moviebooking.catalogservice;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
