@@ -1,4 +1,4 @@
-package com.moviebooking.api_gateway;
+package com.moviebooking.apigateway;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
