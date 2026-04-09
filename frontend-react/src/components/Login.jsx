@@ -10,7 +10,7 @@ export default function Login() {
         e.preventDefault();
         try {
             // Call the Identity Service through the Gateway
-            const response = await apiClient.post(`/auth/login?username=${username}&role=USER`);
+       const response = await apiClient.post(`/auth/login?username=${username}&password=${password}`);
             
             // Save the token to the browser's local storage
             localStorage.setItem('jwt_token', response.data);

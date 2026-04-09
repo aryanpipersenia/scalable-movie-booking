@@ -26,6 +26,19 @@ public class BookingController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Seat is already locked by another user.");
         }
     }
+    @PostMapping("/confirm")
+    public ResponseEntity<String> confirmBooking(@RequestParam String showId,
+                                                 @RequestParam String seatNumber,
+                                                 @RequestParam String userId) {
+        boolean isConfirmed = seatLockService.confirmBooking(showId, seatNumber, userId);
+
+        if (isConfirmed) {
+            return ResponseEntity.ok("Booking confirmed and saved to database!");
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Booking failed. Lock expired or invalid user.");
+        }
+    }
 
     // Endpoint to manually release the lock (e.g., user clicks 'Cancel')
     @PostMapping("/unlock")
