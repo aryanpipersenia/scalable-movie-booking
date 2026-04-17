@@ -6,16 +6,36 @@ spring:
     name: api-gateway
   cloud:
     gateway:
+      routes:
+        # Route 1: Identity Service
+        - id: identity-service
+          uri: lb://IDENTITY-SERVICE
+          predicates:
+            - Path=/auth/**
+
+        # Route 2: Catalog Service
+        - id: catalog-service
+          uri: lb://CATALOG-SERVICE
+          predicates:
+            - Path=/api/events/**
+
+        # Route 3: Booking Service (FIXED INDENTATION)
+        - id: booking-service
+          uri: lb://BOOKING-SERVICE
+          predicates:
+            - Path=/api/bookings/**
+
+      default-filters:
+        # This prevents duplicate CORS headers from crashing the browser
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_UNIQUE
+
       globalcors:
-        cors-configurations:
+        add-to-simple-url-handler-mapping: true # Crucial for React preflight requests!
+        corsConfigurations:
           '[/**]':
-            allowedOrigins: "http://localhost:5173" # Trust the React App
-            allowedMethods:
-              - GET
-              - POST
-              - PUT
-              - DELETE
-              - OPTIONS
+            allowedOrigins:
+              - "http://localhost:5173" # Your React app
+            allowedMethods: "*"
             allowedHeaders: "*"
             allowCredentials: true
 

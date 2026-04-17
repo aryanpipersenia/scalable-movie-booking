@@ -15,39 +15,32 @@ import java.util.Optional;
 public class AuthController {
 
     @Autowired
-    private JwtService jwtService;
+    private JwtService jwtService; // Assuming you have your JWT generation logic here
 
     @Autowired
     private UserCredentialRepository repository;
 
-    // 1. THE NEW REGISTRATION ENDPOINT
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody UserCredential user) {
-        // Check if username already exists
         if (repository.findByUsername(user.getUsername()).isPresent()) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Username already exists!");
         }
 
-        // Force default role to USER if they didn't provide one
+        // Everyone starts as a regular USER
         if (user.getRole() == null || user.getRole().isEmpty()) {
             user.setRole("USER");
         }
 
-        // Save to MySQL
         repository.save(user);
         return ResponseEntity.ok("User registered successfully!");
     }
 
-    // 2. THE UPDATED LOGIN ENDPOINT
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestParam String username, @RequestParam String password) {
-
-        // Fetch user from database
         Optional<UserCredential> userOptional = repository.findByUsername(username);
 
-        // Verify username and password match
+        // Check if user exists AND password matches
         if (userOptional.isPresent() && userOptional.get().getPassword().equals(password)) {
-            // Generate token using their actual database role
             String token = jwtService.generateToken(username, userOptional.get().getRole());
             return ResponseEntity.ok(token);
         } else {

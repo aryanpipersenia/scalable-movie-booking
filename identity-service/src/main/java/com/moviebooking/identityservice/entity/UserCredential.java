@@ -9,17 +9,12 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "user_credentials")
 public class UserCredential {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-
-    @Column(unique = true)
     private String username;
-
     private String email;
     private String password;
-    private String role; // e.g., "USER" or "ADMIN"
+    private String role;
 }
