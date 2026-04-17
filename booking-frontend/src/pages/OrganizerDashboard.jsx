@@ -14,7 +14,7 @@ export default function OrganizerDashboard() {
         ticketPrice: 0,
         totalCapacity: 100,
         hasAssignedSeating: false,
-        imageUrl: '' // Organizers can paste an image link here
+        imageUrl: '' 
     });
 
     const handleChange = (e) => {
@@ -28,24 +28,49 @@ export default function OrganizerDashboard() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        try {
-            // Notice we add the organizerId dynamically. In a real app, extract from JWT.
-            const payload = {
-                ...eventData,
-                organizerId: "CURRENT_USER",
-                status: "LIVE" // Skipping "PENDING" for testing purposes
-            };
 
-            await apiClient.post('/api/events/add', payload);
-            
-            alert("Event Successfully Listed! It is now live on the platform.");
-            navigate('/movies'); // Send them to the viewer dashboard to see their new event
-        } catch (error) {
-            console.error("Failed to create event:", error);
-            alert("Failed to create event. Check console.");
-        } finally {
+        // Define your platform's flat listing fee
+        const platformFee = 500; 
+
+        const options = {
+            key: "rzp_test_SbjyvmGQIgUO7f", // Your existing Razorpay Test Key
+            amount: platformFee * 100, // Razorpay uses paise (multiply by 100)
+            currency: "INR",
+            name: "TicketMaster Pro Platform",
+            description: `Listing Fee for: ${eventData.title}`,
+            theme: { color: "#1A1A2E" }, // A dark theme to match the organizer portal
+            handler: async function (response) {
+                try {
+                    // PAYMENT SUCCESSFUL! Now we push the event to the backend.
+                    const payload = {
+                        ...eventData,
+                        organizerId: "CURRENT_USER",
+                        status: "LIVE" 
+                    };
+
+                    await apiClient.post('/api/events/add', payload);
+                    
+                    alert(`Payment of ₹${platformFee} Successful!\nReceipt ID: ${response.razorpay_payment_id}\n\nYour event is now LIVE.`);
+                    navigate('/movies'); 
+                } catch (error) {
+                    console.error("Failed to create event:", error);
+                    alert("Payment succeeded, but we couldn't list the event. Please contact support.");
+                } finally {
+                    setLoading(false);
+                }
+            }
+        };
+
+        const rzp = new window.Razorpay(options);
+        
+        // If the user closes the modal or payment fails, stop the loading spinner
+        rzp.on('payment.failed', function (response){
+            alert(`Payment Failed: ${response.error.description}`);
             setLoading(false);
-        }
+        });
+
+        // Open the payment modal
+        rzp.open();
     };
 
     return (
@@ -54,9 +79,9 @@ export default function OrganizerDashboard() {
                 <div className="flex justify-between items-center mb-8 border-b border-gray-700 pb-4">
                     <div>
                         <h1 className="text-4xl font-extrabold tracking-tight text-brand">Organizer Portal</h1>
-                        <p className="text-gray-400 mt-2">List a new event, gig, or movie.</p>
+                        <p className="text-gray-400 mt-2">Pay the ₹500 platform fee to list a new event.</p>
                     </div>
-                    <button onClick={() => navigate('/movies')} className="text-sm font-semibold text-gray-400 hover:text-white">
+                    <button onClick={() => navigate('/movies')} className="text-sm font-semibold text-gray-400 hover:text-white transition-colors">
                         ← Back to Events
                     </button>
                 </div>
@@ -97,7 +122,7 @@ export default function OrganizerDashboard() {
                             <input type="date" name="eventDate" required value={eventData.eventDate} onChange={handleChange} className="w-full px-4 py-3 bg-darkBase border border-gray-700 rounded-lg text-white focus:ring-2 focus:ring-brand focus:outline-none" />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-400 mb-1">Price (₹)</label>
+                            <label className="block text-sm font-medium text-gray-400 mb-1">Ticket Price (₹)</label>
                             <input type="number" name="ticketPrice" required min="0" value={eventData.ticketPrice} onChange={handleChange} className="w-full px-4 py-3 bg-darkBase border border-gray-700 rounded-lg text-white focus:ring-2 focus:ring-brand focus:outline-none" />
                         </div>
                         <div>
@@ -107,7 +132,7 @@ export default function OrganizerDashboard() {
                     </div>
 
                     <button type="submit" disabled={loading} className="w-full bg-brand hover:bg-red-600 text-white font-bold py-4 rounded-xl transition-all shadow-[0_0_20px_rgba(233,69,96,0.3)] mt-6 text-lg disabled:opacity-50">
-                        {loading ? 'Creating Event...' : 'Launch Event'}
+                        {loading ? 'Awaiting Payment...' : 'Pay ₹500 & Launch Event'}
                     </button>
                 </form>
             </div>
